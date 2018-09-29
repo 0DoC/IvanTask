@@ -33,7 +33,6 @@ class DataHolder extends React.Component {
         );
     };
     handleInputChange = (event) => {
-
         this.state.query = event.target.value;
         this.setState({query: this.state.query});
     };
@@ -41,17 +40,26 @@ class DataHolder extends React.Component {
         this.state.projectName = event.target.value;
         this.setState({projectName: this.state.projectName});
     };
+    handleSearch = (event) => {
+      let tasks = JSON.parse(localStorage.getItem('tasks'));
+      let searchQuery = event.target.value.toLowerCase();
+      let displayedTasks = tasks.filter((el)=>{
+          let searchName = el.TaskTitle.toLowerCase();
+          return searchName.indexOf(searchQuery) !== -1;
+      });
+      this.setState({allTasks:displayedTasks})
+      }
     dataToLocal() {
         let titleName = this.state.query;
         let projectName = this.state.projectName;
         let currentSeconds = this.state.seconds;
-        this.state.dataArray.push({TaskTitle: titleName, ProjectName: projectName, Time: currentSeconds});
+        let id = Date.now();
+        this.state.dataArray.push({TaskTitle: titleName, ProjectName: projectName, Time: currentSeconds, id:id});
         localStorage.setItem('tasks', JSON.stringify(this.state.dataArray));
     }
     tick = () => {
-        this.setState((prevState) => {
-            return {seconds: prevState.seconds + 1};
-        });
+        this.setState((prevState) => ({seconds: prevState.seconds + 1}));
+
     };
     play = () => {
         if (this.state.isPaused) {
@@ -87,19 +95,22 @@ class DataHolder extends React.Component {
     render() {
         return (
             <div>
+              <div className="controlPanel">
+                <label>Task Title</label>
+                  <input type="text" id="taskTitle" onChange={this.handleInputChange}/>
+                <label>Project Name</label>
+                  <input type="text" id="projectName" onChange={this.handleProjectName}/>
+                <button onClick={this.controlFunc} value="start">{this.state.text}</button>
+                <h4>Уже прошло {this.state.seconds} секунд</h4>
+              </div>
+              <div><input type="text" id="search" onChange={this.handleSearch}/></div>
+              <div className="allTasks">
+              <h3>Completed Tasks</h3>
                 <AllTasks
                     updateTasks={this.updateTasks}
                     allTasks={this.state.allTasks}
                 />
-                <label>Task Title</label>
-                <input type="text" id="taskTitle"
-                       onChange={this.handleInputChange}/>
-                <label>Project Name</label>
-                <input type="text" id="projectName"
-                       onChange={this.handleProjectName}/>
-                <button onClick={this.controlFunc} value="start">{this.state.text}</button>
-                <h4>Уже прошло {this.state.seconds} секунд</h4>
-                <button onClick={this.stop}>Stop</button>
+              </div>
             </div>
         );
     }
